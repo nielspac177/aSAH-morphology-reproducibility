@@ -1,0 +1,69 @@
+############ AUDIT 1: Is the OUTCOME in the imputation model? ############
+Imputation variable set includes outcomes: TRUE 
+--> Correct: including the outcome (and the correlated sister-scales +GCS as
+    auxiliaries) is REQUIRED; omitting it biases associations toward the null.
+
+Imputation methods used per variable:
+       mFS_ord         HH_ord       WFNS_ord            GCS   z_size_ratio z_aspect_ratio   z_log_volume   smoking_ever 
+        "polr"         "polr"         "polr"          "pmm"          "pmm"          "pmm"          "pmm"       "logreg" 
+           htn             dm         statin    circulation 
+      "logreg"       "logreg"       "logreg"       "logreg" 
+
+Logged events (collinearity/constant problems flagged by mice):
+[1] "none"
+
+############ AUDIT 2: Does MI inflate EFFECT SIZE, or only recover power? ############
+If MI is unbiased, the pooled OR should be CLOSE to complete-case; only the CI
+should tighten (more effective N). A large jump in the OR itself = red flag.
+
+out    pred              OR_CC    OR_MI    d_OR%    FMI lambda
+mFS    size_ratio         2.04     1.62   -20.8   0.18   0.19
+mFS    aspect_ratio       1.26     1.43   +13.1   0.25   0.30
+HH     size_ratio         1.56     1.56    +0.0   0.14   0.14
+HH     aspect_ratio       1.37     1.66   +21.8   0.23   0.27
+WFNS   size_ratio         1.82     1.40   -23.1   0.14   0.14
+WFNS   aspect_ratio       1.46     1.52    +4.2   0.25   0.31
+
+############ AUDIT 3: MI-then-DELETE (von Hippel) sensitivity ############
+Impute covariates using the outcome, but analyze only OBSERVED-outcome rows.
+If conclusions match full-MI, the imputed-outcome rows are not driving them.
+
+  MID  mFS   ~ size_ratio   OR=1.74 (1.17-2.59) p=0.006
+  MID  mFS   ~ aspect_ratio OR=1.52 (1.00-2.31) p=0.049
+  MID  HH    ~ size_ratio   OR=1.60 (1.14-2.26) p=0.007
+  MID  HH    ~ aspect_ratio OR=1.70 (1.18-2.45) p=0.005
+  MID  WFNS  ~ size_ratio   OR=1.47 (1.04-2.09) p=0.031
+  MID  WFNS  ~ aspect_ratio OR=1.58 (1.12-2.23) p=0.009
+
+############ AUDIT 4: MNAR delta-adjustment (pattern-mixture) ############
+Worst case: patients with MISSING grades are systematically SICKER. Shift every
+imputed grade up by delta categories; re-test size_ratio -> HH. Does it survive?
+
+  delta=+0.0 grade: size_ratio->HH  OR=1.54  p=0.006
+  delta=+0.5 grade: size_ratio->HH  OR=1.53  p=0.007
+  delta=+1.0 grade: size_ratio->HH  OR=1.51  p=0.007
+
+############ RWE ADD-ON: E-VALUES for unmeasured confounding ############
+How strong (on the OR scale) must an unmeasured confounder be, associated with
+BOTH size ratio and severity, to explain away the association? (outcomes common
+-> rare=FALSE). Directly answers the 'unmeasured confounding' limitation.
+
+  mFS   ~ size_ratio   OR=1.62 (1.13-2.32)  E-value point=1.86  CI=1.32
+  mFS   ~ aspect_ratio OR=1.43 (0.98-2.08)  E-value point=1.68  CI=1.00
+  HH    ~ size_ratio   OR=1.56 (1.14-2.13)  E-value point=1.80  CI=1.33
+  HH    ~ aspect_ratio OR=1.66 (1.20-2.31)  E-value point=1.90  CI=1.42
+  WFNS  ~ size_ratio   OR=1.40 (1.02-1.93)  E-value point=1.65  CI=1.10
+  WFNS  ~ aspect_ratio OR=1.52 (1.09-2.12)  E-value point=1.77  CI=1.27
+
+############ AUDIT 5: Missingness mechanism (MCAR vs MAR diagnostic) ############
+Does observed morphology predict WHETHER the grade is missing? If yes, data are
+MAR-recoverable (we condition on morphology); if nothing predicts it, ~MCAR.
+
+             Estimate Std. Error z value Pr(>|z|)
+(Intercept)    -1.829      0.811  -2.256    0.024
+z_size_ratio    0.272      0.256   1.060    0.289
+z_maxdiam      -0.572      0.334  -1.713    0.087
+age             0.003      0.014   0.247    0.805
+sexMale         0.689      0.398   1.732    0.083
+
+############ DONE ############

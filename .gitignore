@@ -1,0 +1,12 @@
+# NEVER commit raw data — it contains MRN, DOB, and dates (identifiable PHI)
+*.xlsx
+*.xls
+*.csv
+data/*
+!data/README.md
+# de-identified but derived from PHI; keep local
+outputs/analysis_data.rds
+*.rds
+.Rhistory
+.RData
+.Rproj.user
