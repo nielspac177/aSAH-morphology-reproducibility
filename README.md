@@ -16,6 +16,16 @@ covariate-adjusted), with PCA, ridge (ranking only), and dichotomized logistic a
 secondary models → Benjamini–Hochberg FDR → sensitivity suite (Brant test,
 MI-then-delete, MNAR delta-shift, E-values, bootstrap-validated AUC).*
 
+## Key result
+
+![Adjusted association of aneurysm morphology with aSAH severity](figures/Figure1_forest.png)
+
+*Adjusted per-SD odds ratios (proportional-odds ordinal regression, multiple
+imputation) for each morphometric index against the three severity scales. Size
+ratio and aspect ratio are the most consistent correlates; the size-related indices
+survive false-discovery-rate correction (orange). Complete-case estimates are in
+Table 2.*
+
 ## ⚠️ Data / PHI
 
 The raw workbook (`aSAH_Comprehensive_Data_1.1.26.xlsx`) contains **MRN, DOB, and

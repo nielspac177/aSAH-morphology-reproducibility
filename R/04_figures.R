@@ -151,6 +151,7 @@ f1 <- tbl + fst + plot_layout(widths = c(1.15, 1)) +
     theme = theme(plot.title = element_text(face = "bold", size = 12)))
 ggsave("../figures/Figure1_forest.tiff", f1, width = 9.5, height = 7.2, dpi = 300, compression = "lzw", type = "cairo")
 ggsave("../figures/Figure1_forest.pdf",  f1, width = 9.5, height = 7.2)
+ggsave("../figures/Figure1_forest.png",  f1, width = 9.5, height = 7.2, dpi = 150, type = "cairo")  # for README
 
 ## ================= FIGURE 2 : PCA size vs shape ==========================
 pc_in <- d[, c("neck","maxdiam","volume","aspect_ratio","hw_ratio","size_ratio","neck_parent")]
