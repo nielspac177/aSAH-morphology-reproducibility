@@ -5,6 +5,17 @@ Hemorrhage Severity in Aneurysmal Subarachnoid Hemorrhage."* This package
 regenerates every descriptive statistic, model, and sensitivity analysis from the
 raw clinical workbook.
 
+## Analytic workflow
+
+![Analytic workflow](figures/Figure4_method.png)
+
+*Single-center aSAH cohort → seven admission-imaging morphometric indices and four
+severity outcomes → multiple imputation for ~22% missingness (complete-case
+sensitivity) → primary proportional-odds ordinal regression (per-SD,
+covariate-adjusted), with PCA, ridge (ranking only), and dichotomized logistic as
+secondary models → Benjamini–Hochberg FDR → sensitivity suite (Brant test,
+MI-then-delete, MNAR delta-shift, E-values, bootstrap-validated AUC).*
+
 ## ⚠️ Data / PHI
 
 The raw workbook (`aSAH_Comprehensive_Data_1.1.26.xlsx`) contains **MRN, DOB, and

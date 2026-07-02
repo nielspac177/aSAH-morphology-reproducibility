@@ -60,4 +60,5 @@ p <- ggplot() +
 
 ggsave("../figures/Figure4_method.tiff", p, width = 9, height = 8.2, dpi = 300, compression = "lzw", type = "cairo")
 ggsave("../figures/Figure4_method.pdf",  p, width = 9, height = 8.2)
-message("Wrote Figure4_method (.tiff + .pdf)")
+ggsave("../figures/Figure4_method.png",  p, width = 9, height = 8.2, dpi = 150, type = "cairo")  # for README
+message("Wrote Figure4_method (.tiff + .pdf + .png)")
