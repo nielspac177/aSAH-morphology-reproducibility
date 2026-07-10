@@ -103,12 +103,12 @@ ccpc <- complete.cases(pc_in); pca <- prcomp(pc_in[ccpc,], scale.=TRUE)
 dp <- d[ccpc,]; dp$PC1<-pca$x[,1]; dp$PC2<-pca$x[,2]; dp$PC3<-pca$x[,3]
 s1 <- data.frame()
 for (on in names(OUTS)) for (pc in c("PC1","PC2","PC3")) {
-  f <- as.formula(paste0(OUTS[[on]], " ~ ", pc, " + age + sex + htn"))
+  f <- as.formula(paste0(OUTS[[on]], " ~ ", pc, " + ", paste(COVARS, collapse=" + ")))
   r <- fit1(f, pc, dp); if(is.null(r)) next
   s1 <- rbind(s1, data.frame(outcome=on, component=pc,
     est=fmt(exp(r["b"]),exp(r["b"]-1.96*r["se"]),exp(r["b"]+1.96*r["se"]),2*pnorm(abs(r["b"]/r["se"]),lower.tail=FALSE))))
 }
-gc <- lm(GCS ~ PC1 + age + sex + htn, data=dp); gcc <- coef(summary(gc))["PC1",]
+gc <- lm(as.formula(paste0("GCS ~ PC1 + ", paste(COVARS, collapse=" + "))), data=dp); gcc <- coef(summary(gc))["PC1",]
 write.csv(s1, file.path(td,"SuppS1_PCA_components.csv"), row.names=FALSE)
 add("## Supplementary Table S1. Principal components → severity (ordinal, adjusted)")
 add("PC1 = size axis (48%% var); PC2 = shape axis (22%%).\n")

@@ -1,82 +1,129 @@
-## 06_method_figure.R
-## Analytic-workflow schematic (manuscript Figure 4 + repo). Staged-pipeline
-## design: numbered rail, rounded content cards, highlighted primary-model stage,
-## result banner. Reproducible vector output; colorblind-safe, restrained palette.
+## 06_method_figure.R  — Figure 4: Analytic workflow (JAMA house style)
+## Swim-lane methods schematic: rotated stage labels down the left margin,
+## content boxes connected by arrows (across each lane, and down between lanes).
+## Methods only. Reproducible vector + 300-dpi raster; palette from _journal_theme.R.
 
-suppressMessages({ library(ggplot2); library(grid) })
+suppressMessages({ library(ggplot2); library(grid); library(ggtext) })
+source("_journal_theme.R")
 dir.create("../figures", showWarnings = FALSE)
 
-navy   <- "#123B5E"; ink    <- "#16324F"; sub <- "#33455A"
-boxf   <- "#EEF3F8"; boxc   <- "#B9C8D8"
-hlf    <- "#E3F1EC"; hlc    <- "#4FA98A"
-resf   <- "#123B5E"; foot   <- "#7A8896"
+BORD <- JAMA[["slate"]]     # box borders / arrows
+ACC  <- JAMA[["brick"]]     # primary-model emphasis
+LANEF <- "#EEF3F5"          # lane-label fill
+BOXF <- "white"
 
-stages <- data.frame(
-  n = 1:5,
-  y = c(8.8, 7.3, 5.8, 4.3, 2.8),
-  title = c("Cohort & measurements", "Data preparation", "Primary model",
-            "Secondary models & multiplicity", "Robustness"),
-  content = c(
-    "171 patients · single center, 2013–2023\n7 morphometric indices (admission imaging)\n4 outcomes: Hunt–Hess · WFNS · mFS (ordinal) · GCS (continuous)",
-    "standardize predictors (per SD) · log-transform volume\nmultiple imputation for ~22% missing (MICE, m = 20)\ncomplete-case analysis retained as sensitivity",
-    "proportional-odds ordinal regression\none index per model, adjusted for 7 covariates*\neffect = odds ratio per 1 SD  (> 1 → higher severity)",
-    "PCA: size axis (PC1) vs shape axis (PC2)\nridge (ranking only) · dichotomized logistic\nBenjamini–Hochberg false-discovery-rate control",
-    "proportional-odds check (Brant) · MI-then-delete\nMNAR delta-shift · E-values · bootstrap-validated AUC"),
-  hl = c(FALSE, FALSE, TRUE, FALSE, FALSE),
+## ---- helpers -------------------------------------------------------------
+## sharp-cornered content box (grid rect so borders stay crisp at any aspect)
+rectg <- function(xmin, xmax, ymin, ymax, fill = BOXF, col = BORD, lwd = 0.8)
+  annotation_custom(rectGrob(gp = gpar(fill = fill, col = col, lwd = lwd)),
+                    xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax)
+## rounded lane-label box
+laneg <- function(ymin, ymax, xmin = 1.5, xmax = 8)
+  annotation_custom(roundrectGrob(r = unit(4, "pt"),
+      gp = gpar(fill = LANEF, col = BORD, lwd = 0.8)),
+      xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax)
+arr <- function() arrow(length = unit(0.13, "cm"), type = "closed")
+
+## ---- lane definitions (top -> bottom) ------------------------------------
+lanes <- data.frame(
+  label = c("Cohort &\nmeasurements", "Data\npreparation", "Primary\nmodel",
+            "Multiplicity", "Sensitivity &\nvalidation"),
+  ymin  = c(84, 70, 46, 30, 14),
+  ymax  = c(96, 82, 68, 44, 28))
+lanes$yc <- (lanes$ymin + lanes$ymax) / 2
+
+## ---- content boxes -------------------------------------------------------
+boxes <- data.frame(
+  xmin = c(11, 40, 71,        # L1
+           11, 43, 78,        # L2
+           11,                # L3 (wide, drawn separately)
+           11, 40, 69,        # L4
+           11, 34, 57, 80),   # L5
+  xmax = c(31, 62, 98,
+           34, 70, 98,
+           98,
+           37, 66, 98,
+           31, 54, 77, 98),
+  ymin = c(85.5,85.5,85.5,  71.5,71.5,71.5,  47.5,  31.5,31.5,31.5,  15.5,15.5,15.5,15.5),
+  ymax = c(94.5,94.5,94.5,  80.5,80.5,80.5,  66.5,  42.5,42.5,42.5,  26.5,26.5,26.5,26.5),
+  label = c(
+    "171 patients\nsingle-center aSAH\n2013–2023",
+    "7 morphometric indices\nadmission CTA / DSA",
+    "4 severity outcomes\nHunt–Hess · WFNS · mFS (ordinal)\nGCS (continuous)",
+    "Standardize predictors\n(per SD) · log-transform volume",
+    "Multiple imputation\nMICE, m = 20 (~22% missing)",
+    "Complete-case\nanalysis (sensitivity)",
+    "",  # primary-model box filled by rich text below
+    "Benjamini–Hochberg\nFDR control",
+    "Brant test\n(parallel-odds)",
+    "MI-then-delete",
+    "E-values", "MNAR δ-shift", "Bootstrap-\nvalidated AUC", "PCA: size vs\nshape axis"),
   stringsAsFactors = FALSE)
-
-bx0 <- 1.75; bx1 <- 9.6; hh <- 0.62
-rr <- function(ymid, fill, col, lwd = 1.2, xmin = bx0, xmax = bx1, half = hh)
-  annotation_custom(roundrectGrob(r = unit(6, "pt"),
-    gp = gpar(fill = fill, col = col, lwd = lwd)),
-    xmin = xmin, xmax = xmax, ymin = ymid - half, ymax = ymid + half)
-
-boxes <- lapply(seq_len(nrow(stages)), function(i)
-  rr(stages$y[i], ifelse(stages$hl[i], hlf, boxf), ifelse(stages$hl[i], hlc, boxc),
-     lwd = ifelse(stages$hl[i], 1.6, 1.2)))
-
-res_y <- 1.2
-banner <- rr(res_y, resf, NA, xmin = 0.4, xmax = 9.6, half = 0.56)
+prim <- 7L                                       # index of the wide primary box
+boxes$xc <- (boxes$xmin + boxes$xmax)/2
+boxes$yc <- (boxes$ymin + boxes$ymax)/2
 
 p <- ggplot() +
-  # vertical rail behind the cards
-  annotate("segment", x = 0.95, xend = 0.95, y = stages$y[1], yend = stages$y[5],
-           color = navy, linewidth = 1.1) +
-  boxes + banner +
-  # rail continues into the result banner with an arrowhead
-  annotate("segment", x = 0.95, xend = 0.95, y = stages$y[5] - hh, yend = res_y + 0.62,
-           color = navy, linewidth = 1.1,
-           arrow = arrow(length = unit(0.2, "cm"), type = "closed")) +
-  # numbered stage nodes
-  geom_point(data = stages, aes(0.95, y), size = 9, shape = 21,
-             fill = navy, color = "white", stroke = 1.1) +
-  geom_text(data = stages, aes(0.95, y, label = n), color = "white",
-            fontface = "bold", size = 3.7) +
-  # card titles + content
-  geom_text(data = stages, aes(bx0 + 0.18, y + 0.42, label = title), hjust = 0,
-            fontface = "bold", size = 3.35, color = ink) +
-  geom_text(data = stages, aes(bx0 + 0.18, y + 0.18, label = content), hjust = 0,
-            vjust = 1, size = 2.62, color = sub, lineheight = 1.08) +
-  # result banner text
-  annotate("text", x = 5, y = res_y + 0.17,
-           label = "Size ratio and aspect ratio — the size axis — track greater aSAH severity",
-           color = "white", fontface = "bold", size = 3.15) +
-  annotate("text", x = 5, y = res_y - 0.2,
-           label = "consistent across grading scales  ·  robust to imputation and unmeasured confounding",
-           color = "#D5E1EC", size = 2.72) +
-  # title + footnote
-  annotate("text", x = 0.4, y = 9.9, label = "Analytic workflow", hjust = 0,
-           fontface = "bold", size = 5.4, color = ink) +
-  annotate("text", x = 0.4, y = 0.25,
-           label = "*Adjusted for age, sex, smoking, hypertension, diabetes, statin use, and aneurysm circulation.",
-           hjust = 0, fontface = "italic", size = 2.4, color = foot) +
-  coord_cartesian(xlim = c(0, 10), ylim = c(0, 10.25), expand = FALSE) +
-  theme_void() +
-  theme(plot.margin = margin(8, 10, 8, 10),
-        plot.background  = element_rect(fill = "white", color = NA),
-        panel.background = element_rect(fill = "white", color = NA))
+  ## lane labels
+  lapply(seq_len(nrow(lanes)), function(i) laneg(lanes$ymin[i], lanes$ymax[i])) +
+  geom_text(data = lanes, aes(4.75, yc, label = label), angle = 90,
+            fontface = "bold", size = 2.75, colour = BORD, lineheight = 0.95, family = JBASE) +
 
-ggsave("../figures/Figure4_method.tiff", p, width = 8.6, height = 9.4, dpi = 300, compression = "lzw", type = "cairo")
-ggsave("../figures/Figure4_method.pdf",  p, width = 8.6, height = 9.4)
-ggsave("../figures/Figure4_method.png",  p, width = 8.6, height = 9.4, dpi = 150, type = "cairo")
-message("Wrote Figure4_method (.tiff + .pdf + .png)")
+  ## content boxes (all except the wide primary box)
+  lapply(setdiff(seq_len(nrow(boxes)), prim), function(i)
+    rectg(boxes$xmin[i], boxes$xmax[i], boxes$ymin[i], boxes$ymax[i])) +
+  ## primary-model box (emphasized border)
+  rectg(boxes$xmin[prim], boxes$xmax[prim], boxes$ymin[prim], boxes$ymax[prim],
+        fill = "#FBF6F5", col = ACC, lwd = 1.5) +
+
+  ## box text (multi-line, centered)
+  geom_text(data = boxes[-prim, ], aes(xc, yc, label = label),
+            size = 2.5, colour = BODY, lineheight = 1.05, family = JBASE) +
+
+  ## ---- primary-model rich content ----
+  annotate("text", x = 13, y = 64.7, label = "Primary model — proportional-odds ordinal regression",
+           hjust = 0, fontface = "bold", size = 3.05, colour = ACC, family = JBASE) +
+  annotate("segment", x = 13, xend = 96, y = 62.3, yend = 62.3, colour = "#E2C9C7", linewidth = 0.4) +
+  geom_richtext(aes(54.5, 58.6,
+      label = "logit&#8202;[&#8202;Pr(&#8202;*Y*&#8202;≥&#8202;*k*&#8202;)&#8202;] = α<sub>*k*</sub> + β·*Z* + Σ<sub>*j*</sub> γ<sub>*j*</sub>&#8202;*C<sub>j</sub>*"),
+      hjust = 0.5, size = 3.4, colour = INK, fill = NA, label.color = NA, family = JBASE) +
+  geom_richtext(aes(13, 54,
+      label = "*Z* = morphometric index (per 1 SD) · OR per 1 SD = *e*<sup>β</sup> · OR > 1 = higher severity · one index per model"),
+      hjust = 0, size = 2.5, colour = BODY, fill = NA, label.color = NA, family = JBASE) +
+  geom_richtext(aes(13, 50.4,
+      label = "<span style='color:#5B6B73'>Adjusted for</span> **age · sex · smoking · hypertension · diabetes · statin use · aneurysm circulation**"),
+      hjust = 0, size = 2.5, colour = BODY, fill = NA, label.color = NA, family = JBASE) +
+
+  ## ---- horizontal arrows (within lanes) ----
+  annotate("segment", x = c(31,62, 34,70, 31,54,77, 37,66),
+                     xend = c(40,71, 43,78, 34,57,80, 40,69),
+                     y   = c(90,90, 76,76, 21,21,21, 37,37),
+                     yend= c(90,90, 76,76, 21,21,21, 37,37),
+           colour = BORD, linewidth = 0.6, arrow = arr()) +
+  ## ---- vertical arrows (between lanes), down the left column ----
+  annotate("segment", x = 21, xend = 21,
+           y    = c(85.5, 71.5, 47.5, 31.5),
+           yend = c(80.5, 66.7, 42.5, 26.5),
+           colour = BORD, linewidth = 0.6, arrow = arr()) +
+
+  ## ---- title + footnote ----
+  annotate("text", x = 1.5, y = 99.4, label = "Analytic workflow", hjust = 0,
+           fontface = "bold", size = 4.6, colour = INK, family = JBASE) +
+  annotate("segment", x = 1.5, xend = 98, y = 8.5, yend = 8.5, colour = HAIR, linewidth = 0.35) +
+  geom_textbox(aes(1.5, 6.5,
+      label = "Single-center retrospective cohort; each morphometric index modelled separately per outcome. Continuous outcome (admission GCS; lower = worse) modelled by linear regression. CTA, CT angiography; DSA, digital subtraction angiography; WFNS, World Federation of Neurosurgical Societies grade; mFS, modified Fisher scale; FDR, false-discovery rate; MNAR, missing not at random; SD, standard deviation."),
+      hjust = 0, vjust = 1, halign = 0, width = unit(0.97, "npc"),
+      size = 1.95, colour = MUTE, fill = NA, box.color = NA,
+      box.padding = unit(c(0,0,0,0),"pt"), lineheight = 1.18, family = JBASE) +
+
+  coord_cartesian(xlim = c(0, 100), ylim = c(2, 100.5), expand = FALSE, clip = "off") +
+  theme_void() +
+  theme(plot.margin = margin(7, 9, 7, 9),
+        plot.background  = element_rect(fill = "white", colour = NA),
+        panel.background = element_rect(fill = "white", colour = NA))
+
+save_fig(p, "../figures/Figure1_method", width = 8.7, height = 10.0)
+## also export as a standalone (single-panel) tiff for per-figure submission
+dir.create("../figures/individual", showWarnings = FALSE)
+save_fig(p, "../figures/individual/Figure1", width = 8.7, height = 10.0)
+message("Wrote Figure1_method (.tiff + .pdf + .png)")

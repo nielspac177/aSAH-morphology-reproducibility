@@ -60,16 +60,16 @@ PC1 = size axis (48% var); PC2 = shape axis (22%).
 
 | Outcome | Component | OR (95% CI), p |
 |---|---|---|
-| modified Fisher | PC1 | 1.19 (0.94–1.52), 0.154 |
-| modified Fisher | PC2 | 0.97 (0.71–1.33), 0.860 |
-| modified Fisher | PC3 | 1.01 (0.70–1.46), 0.956 |
-| Hunt & Hess | PC1 | 1.22 (0.98–1.53), 0.079 |
-| Hunt & Hess | PC2 | 0.88 (0.65–1.18), 0.387 |
-| Hunt & Hess | PC3 | 1.20 (0.84–1.71), 0.325 |
-| WFNS | PC1 | 1.29 (1.02–1.62), 0.034 |
-| WFNS | PC2 | 0.87 (0.63–1.19), 0.374 |
-| WFNS | PC3 | 1.23 (0.85–1.79), 0.270 |
-| GCS (linear) | PC1 | β=-0.61, p=0.007 |
+| modified Fisher | PC1 | 1.25 (0.94–1.67), 0.124 |
+| modified Fisher | PC2 | 0.98 (0.70–1.36), 0.883 |
+| modified Fisher | PC3 | 0.95 (0.64–1.43), 0.821 |
+| Hunt & Hess | PC1 | 1.24 (0.98–1.57), 0.067 |
+| Hunt & Hess | PC2 | 0.89 (0.65–1.23), 0.486 |
+| Hunt & Hess | PC3 | 1.14 (0.78–1.66), 0.502 |
+| WFNS | PC1 | 1.35 (1.06–1.73), 0.017 |
+| WFNS | PC2 | 0.83 (0.60–1.15), 0.265 |
+| WFNS | PC3 | 1.13 (0.77–1.67), 0.536 |
+| GCS (linear) | PC1 | β=-0.71, p=0.003 |
 
 ## Supplementary Table S2. E-values for unmeasured confounding (MI estimates)
 | Outcome | Predictor | OR (95% CI) | E-value (point) | E-value (CI) |
